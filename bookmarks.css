@@ -1,0 +1,10 @@
+.bookmark {margin-bottom: 10px}
+#bookmarks {margin-top: 20px}
+.date {
+  font-size:11px;
+  color:#E5E5E5;
+}
+.tags {
+  font-size:13px;
+  color:#999999;
+}
