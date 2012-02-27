@@ -1,6 +1,8 @@
 require 'pry'
 require "uri"
-require 'yajl/http_stream'
+require 'open-uri'
+require 'nokogiri'
+require 'mechanize'
 
 class Bookmark
   require 'time'
@@ -186,9 +188,33 @@ require 'yajl'
   end
 end
 
-# url = URI.parse("http://pinboard.in/export/format:json/")
-# results = Yajl::HttpStream.get(url)
-# pb = PinboardBackup.new(results)
+
+puts "Pinboard Backup 0.1"
+
+print "Username: "
+username = gets.strip
+print "Password: "
+password = gets.strip
+
+# Mechanize agent
+agent = Mechanize.new
+
+# Logging in to pinboard
+page = agent.get('http://pinboard.in')
+login_form = page.form('login')
+login_form.username = username
+login_form.password = password
+page = agent.submit(login_form)
+
+puts "Logged in, getting backup file."
+
+agent.download("http://pinboard.in/export/format:json/", 'pinboard.json')
+
+puts "Got the backup, generating pages..."
 
 pb = PinboardBackup.new("pinboard.json")
 pb.generate_backup
+
+puts "Pages generated, press enter to open 1.html"
+gets
+`open 1.html`
