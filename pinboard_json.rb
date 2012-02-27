@@ -6,7 +6,7 @@ require 'mechanize'
 
 class Bookmark
   require 'time'
-  attr_reader :href, :title, :tags, :description
+  attr_reader :href, :title, :tags, :description, :hash
   
   def initialize(bookmark_hash)
   	@href = bookmark_hash["href"]
@@ -28,46 +28,16 @@ class Bookmark
 end
 
 class Page
-  
-  HEAD = %Q{<!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="utf-8">
-      <title>Bookmarks</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="description" content="">
-      <meta name="author" content="">
-  
-      <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-      <!--[if lt IE 9]>
-        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-      <![endif]-->
-  
-      <!-- Le styles -->
-      <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-      <link href="bookmarks.css" rel="stylesheet">
-  
-     <script type="text/javascript">
-  
-     </script>
-  
-    </head>
-    <body>
-  }
-  FOOTER = %Q{</section></div>
-                  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-                  <script type="text/javascript">
-                    //$("h2").hover(function(){
-                    //  $(this).children(".date").first().toggle()
-                    //});
-                  </script>
-                </body></html>}
+require 'haml'
+require 'tilt'
   
   def initialize(array_of_bookmarks, page_size, page_number, number_of_pages)
     @bookmarks = array_of_bookmarks
     @page_size = page_size
     @page_number = page_number
     @number_of_pages = number_of_pages
+    @navigation = navigation
+    @template = Tilt.new('page.haml')
     build_page
   end
   
@@ -79,35 +49,15 @@ class Page
   
   private
   def build_page
-    @page = HEAD
-    @page += %Q{<div class="container"><div class="page-header"><h1>Bookmark Backup: Page #{@page_number}</h1></div><section id="bookmarks">}
-    @bookmarks.each do |b|
-      @page += build_bookmark_row(b)
-    end
-    @page += navigation
-    @page += FOOTER
+    @page = @template.render(self, :bookmarks => @bookmarks, :page_number => @page_number, :navigation => @navigation)
   end
   
-  def build_bookmark_row(bookmark)
-    %Q{<article id="#{bookmark.hash}" class="bookmark row-fluid">
-       <div class="span12">
-         <h2><a href="#{bookmark.href}">#{bookmark.title}</a></h2>
-         <div class="row-fluid">
-           <div class="span1 date small">#{bookmark.date_added}</div>
-           <div class="span6 offset1">#{bookmark.description}</div>
-         </div>
-         <div class="tags">#{bookmark.tags}</div>
-       </div>
-       </article>}
+  def class_if_active(page)
+    "active disabled" if page == @page_number
   end
   
   def navigation
-    navbar = %Q{<div class="pagination pagination-centered"><ul>#{previous_page_link}}
-    (previous_page(@page_number,2)..next_page(@page_number,2)).each do |p|
-      navbar += %Q{<li class="#{"active disabled" if p == @page_number}"><a href="#{p}.html">#{p}</a></li>}
-    end
-    
-    navbar += %Q{#{next_page_link}</div>}
+    (previous_page(@page_number,2)..next_page(@page_number,2)).to_a
   end
   
   def previous_page(page_number,offset=1)
@@ -191,26 +141,30 @@ end
 
 puts "Pinboard Backup 0.1"
 
-print "Username: "
-username = gets.strip
-print "Password: "
-password = gets.strip
+if File.exist? "pinboard.json" then
+  puts "File exists, generating backup"
+else
+  print "Username: "
+  username = gets.strip
+  print "Password: "
+  password = gets.strip
+  
+  # Mechanize agent
+  agent = Mechanize.new
+  
+  # Logging in to pinboard
+  page = agent.get('http://pinboard.in')
+  login_form = page.form('login')
+  login_form.username = username
+  login_form.password = password
+  page = agent.submit(login_form)
+  
+  puts "Logged in, getting backup file."
+  
+  agent.download("http://pinboard.in/export/format:json/", 'pinboard.json')
+end
 
-# Mechanize agent
-agent = Mechanize.new
-
-# Logging in to pinboard
-page = agent.get('http://pinboard.in')
-login_form = page.form('login')
-login_form.username = username
-login_form.password = password
-page = agent.submit(login_form)
-
-puts "Logged in, getting backup file."
-
-agent.download("http://pinboard.in/export/format:json/", 'pinboard.json')
-
-puts "Got the backup, generating pages..."
+puts "Generating pages..."
 
 pb = PinboardBackup.new("pinboard.json")
 pb.generate_backup

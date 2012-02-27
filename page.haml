@@ -1,0 +1,39 @@
+!!! 5
+%html  
+  %head  
+    %title Bookmark Backups
+    %meta{'charset' => 'utf8'}
+    %meta{:name => 'viewport', :content => "width=device-width, initial-scale=1.0"}
+    %meta{:name => 'description', :content => ""}
+    %meta{:name => 'author', :content => ""}
+    /HTML5 Shim 
+    /[if lt IE 9]
+      %script{:type => "text/javascript",  :src  => "http://html5shim.googlecode.com/svn/trunk/html5.js"}
+    /Stylesheets
+    %link{:rel => "stylesheet", :href  => "bootstrap/css/bootstrap.min.css"}
+    %link{:rel => "stylesheet", :href  => "bookmarks.css"}
+  %body  
+    .container
+      .page-header
+        %h1 Bookmark Backup: Page #{page_number}
+      %section#bookmarks
+        - bookmarks.each do |bookmark|
+          %article{:id => [bookmark.hash], :class => ['bookmark', 'row-fluid']}
+            .span12
+              %h2
+                %a{:href => bookmark.href} #{bookmark.title}
+              .row-fluid
+                %div{:class => ['span1', 'date', 'small']}= bookmark.date_added
+                %div{:class => ['span6', 'offset1']}= bookmark.description
+              .tags= bookmark.tags
+      %div{:class => ['pagination', 'pagination-centered']}
+        %ul
+          = previous_page_link
+          - navigation.each do |nav|
+            %li{:class => class_if_active(nav)}
+              %a{:href => "#{nav}.html"} #{nav}
+          = next_page_link
+
+
+      #footer  
+    %script{:src => "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" }
