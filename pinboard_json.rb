@@ -44,10 +44,8 @@ class Page
     </head>
     <body>
     <section id="bookmarks">
-}
-  FOOTER = %Q{</section></body>
-  </html>
-}
+  }
+  FOOTER = %Q{</section></body></html>}
   
   def initialize(array_of_bookmarks, page_size, page_number, number_of_pages)
     @bookmarks = array_of_bookmarks
@@ -67,23 +65,44 @@ class Page
   def build_page
     @page = HEAD
     @bookmarks.each do |b|
-      @page += %Q{<div class="row">
-      <div class="span7 offset1"><a href="#{b.href}">#{b.title}</a></div></div>}
+      @page += build_bookmark_row(b)
     end
     @page += navigation
     @page += FOOTER
   end
   
+  def build_bookmark_row(bookmark)
+    %Q{<div class="row"><div class="span7 offset1"><a href="#{bookmark.href}">#{bookmark.title}</a></div></div>}
+  end
+  
   def navigation
-    navbar = %Q{<div class="pagination pagination-centered">
-      <ul>
-        <li><a href="#{@page_number - 1}.html">Prev</a></li>}
+    navbar = %Q{<div class="pagination pagination-centered"><ul>#{previous_page_link}}
     
     (@page_number-2..@page_number+2).each do |p|
-      navbar += %Q{<li class="#{"active" if p == @page_number}"><a href="#{p}.html">#{p}</a></li>}
+      navbar += %Q{<li class="#{"active disabled" if p == @page_number}"><a href="#{p}.html">#{p}</a></li>}
     end
     
     navbar += %Q{<li><a href="#{@page_number + 1}.html">Next</a></li></ul></div>}
+  end
+  
+  def previous_page(page_number)
+    page_number - 1
+  end
+  
+  def next_page(page_number)
+    page_number + 1
+  end
+  
+  def previous_page_link
+    if @page_number == 1
+      %Q{<li class="disabled"><a href="#">Prev</a></li>}
+    else
+      %Q{<li><a href="#{previous_page(@page_number)}.html">Prev</a></li>}
+    end
+  end
+  
+  def next_page_link
+    
   end
 end
 
