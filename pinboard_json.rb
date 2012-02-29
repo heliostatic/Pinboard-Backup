@@ -141,7 +141,10 @@ end
 
 puts "Pinboard Backup 0.1"
 
-if File.exist? "pinboard.json" then
+t = Time.now
+todays_backup = "pinboard_#{t.day}.json"
+
+if File.exist? todays_backup then
   puts "File exists, generating backup"
 else
   print "Username: "
@@ -161,12 +164,12 @@ else
   
   puts "Logged in, getting backup file."
   
-  agent.download("http://pinboard.in/export/format:json/", 'pinboard.json')
+  agent.download("http://pinboard.in/export/format:json/", todays_backup)
 end
 
 puts "Generating pages..."
 
-pb = PinboardBackup.new("pinboard.json")
+pb = PinboardBackup.new(todays_backup)
 pb.generate_backup
 
 puts "Pages generated, press enter to open 1.html"
