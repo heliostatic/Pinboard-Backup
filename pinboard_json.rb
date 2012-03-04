@@ -3,6 +3,7 @@ require "uri"
 require 'open-uri'
 require 'nokogiri'
 require 'mechanize'
+require 'highline/import'
 
 class Bookmark
   require 'time'
@@ -143,23 +144,22 @@ puts "Pinboard Backup 0.1"
 
 t = Time.now
 todays_backup = "pinboard_#{t.day}.json"
+user = {}
 
 if File.exist? todays_backup then
   puts "File exists, generating backup"
 else
-  print "Username: "
-  username = gets.strip
-  print "Password: "
-  password = gets.strip
-  
+  user[:username] = ask("Enter your username:  ")
+  user[:password] = ask("Enter your password:  ") { |q| q.echo = "*" }
+    
   # Mechanize agent
   agent = Mechanize.new
   
   # Logging in to pinboard
   page = agent.get('http://pinboard.in')
   login_form = page.form('login')
-  login_form.username = username
-  login_form.password = password
+  login_form.username = user[:username]
+  login_form.password = user[:password]
   page = agent.submit(login_form)
   
   puts "Logged in, getting backup file."
