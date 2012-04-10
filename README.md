@@ -7,7 +7,7 @@
 
 Clone or fork this repository. Then run
 
-  bundle install
-  ruby pinboard_json.rb
+    bundle install
+    ruby pinboard_json.rb
 
 When prompted, enter your `username` and `password`.
