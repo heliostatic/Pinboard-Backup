@@ -23,6 +23,7 @@ GEM
       unf_ext
     unf_ext (0.0.4)
     webrobots (0.0.13)
+    yajl-ruby (1.1.0)
 
 PLATFORMS
   ruby
@@ -33,3 +34,4 @@ DEPENDENCIES
   mechanize
   nokogiri
   tilt
+  yajl-ruby
