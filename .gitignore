@@ -1,3 +1,4 @@
 *.html
 *.json
 Gemfile.lock
+.ruby-version
